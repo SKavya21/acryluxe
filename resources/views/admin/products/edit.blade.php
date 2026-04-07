@@ -14,7 +14,11 @@
     <input name="color" value="{{ $product->color }}" class="form-control mb-2">
     <input name="size" value="{{ $product->size }}" class="form-control mb-2">
     <input name="image" value="{{ $product->image }}" class="form-control mb-2">
+     @if($product->image)
+        <img src="{{ asset('storage/' . $product->image) }}" width="100" class="mb-2">
+    @endif
 
+    <input type="file" name="image" class="form-control mb-2">
     <button class="btn btn-success">Update</button>
 </form>
 

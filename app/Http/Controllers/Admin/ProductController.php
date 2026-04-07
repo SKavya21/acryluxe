@@ -28,15 +28,19 @@ public function create()
 public function store(Request $request)
 {
     $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'price' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
+        'name' => 'required',
+        'price' => 'required|numeric',
+        'stock' => 'required|integer',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
+
+    if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')->store('products', 'public');
+    }
 
     $this->productService->create($validated);
 
-    return redirect()->route('admin.products.index')
-                     ->with('success', 'Product added successfully');
+    return redirect()->route('admin.products.index')->with('success', 'Product added');
 }
 
 public function edit($id)
@@ -48,15 +52,19 @@ public function edit($id)
 public function update(Request $request, $id)
 {
     $validated = $request->validate([
-        'name' => 'required|string|max:255',
-        'price' => 'required|numeric|min:0',
-        'stock' => 'required|integer|min:0',
+        'name' => 'required',
+        'price' => 'required|numeric',
+        'stock' => 'required|integer',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
+
+    if ($request->hasFile('image')) {
+        $validated['image'] = $request->file('image')->store('products', 'public');
+    }
 
     $this->productService->update($id, $validated);
 
-    return redirect()->route('admin.products.index')
-                     ->with('success', 'Product updated');
+    return redirect()->route('admin.products.index')->with('success', 'Updated');
 }
 
 public function destroy($id)

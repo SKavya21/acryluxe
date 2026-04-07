@@ -1,40 +1,35 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="/">Acryluxe 💎</a>
 
-        <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <a class="navbar-brand fw-bold" href="/">Acryluxe</a>
 
-        <div id="nav" class="collapse navbar-collapse">
-            <ul class="navbar-nav ms-auto">
+        <div class="ms-auto">
 
-                @auth
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Welcome, {{ auth()->user()->name }}</a>
-                    </li>
+            @auth
+                <span class="text-white me-2">
+                    {{ auth()->user()->name }}
+                </span>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Cart</a>
-                    </li>
+                <a href="/admin/products" class="btn btn-warning btn-sm">
+                    Admin
+                </a>
 
-                    <li class="nav-item">
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button class="btn btn-link nav-link">Logout</button>
-                        </form>
-                    </li>
-                @else
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">Login</a>
-                    </li>
+                <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+                    @csrf
+                    <button class="btn btn-danger btn-sm">Logout</button>
+                </form>
 
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('register') }}">Register</a>
-                    </li>
-                @endauth
+            @else
+                <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">
+                    Login
+                </a>
 
-            </ul>
+                <a href="{{ route('register') }}" class="btn btn-light btn-sm">
+                    Register
+                </a>
+            @endauth
+
         </div>
+
     </div>
 </nav>

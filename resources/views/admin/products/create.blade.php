@@ -13,6 +13,7 @@
     <input name="color" placeholder="Color" class="form-control mb-2">
     <input name="size" placeholder="Size" class="form-control mb-2">
     <input name="image" placeholder="Image URL" class="form-control mb-2">
+    <input type="file" name="image" class="form-control mb-2">
 
     <button class="btn btn-primary">Save</button>
 </form>

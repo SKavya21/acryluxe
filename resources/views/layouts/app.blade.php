@@ -34,3 +34,9 @@
         </div>
     </body>
 </html>
+<style>
+.card:hover {
+    transform: scale(1.03);
+    transition: 0.3s;
+}
+</style>

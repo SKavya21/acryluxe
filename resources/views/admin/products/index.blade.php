@@ -13,6 +13,7 @@
         <th>Name</th>
         <th>Price</th>
         <th>Stock</th>
+        <th>Image</th>
         <th>Action</th>
     </tr>
 
@@ -21,6 +22,11 @@
         <td>{{ $product->name }}</td>
         <td>₹{{ $product->price }}</td>
         <td>{{ $product->stock }}</td>
+         @if($product->image)
+        <img src="{{ asset('storage/' . $product->image) }}" width="100" class="mb-2">
+    @endif
+
+    <input type="file" name="image" class="form-control mb-2">
         <td>
 
             <a href="{{ route('admin.products.edit', $product->id) }}" 

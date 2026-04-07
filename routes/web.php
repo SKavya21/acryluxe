@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Product;
+
 use App\Http\Controllers\ProfileController;
 
 use Illuminate\Support\Facades\Route;
@@ -7,7 +9,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\ProductController;
 
 Route::get('/', function () {
-    return view('welcome');
+    $products = Product::latest()->get();
+    return view('user.home', compact('products'));
 });
 
 Route::get('/dashboard', function () {
