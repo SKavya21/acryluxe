@@ -17,9 +17,18 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $adminEmail = env('ADMIN_EMAIL', 'admin@acryluxe.local');
+
+        User::updateOrCreate([
+            'email' => $adminEmail,
+        ], [
+            'name' => 'Acryluxe Admin',
+            'password' => env('ADMIN_PASSWORD', 'admin123456'),
+            'is_admin' => true,
+        ]);
+
+        $this->call([
+            ProductSeeder::class,
         ]);
     }
 }

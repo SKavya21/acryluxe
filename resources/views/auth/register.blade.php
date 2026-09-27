@@ -351,13 +351,23 @@
 <div class="auth-form-panel">
   <div class="auth-form-inner">
 
-    <a href="acryluxe_landing.html" class="back-link">
+    <a href="{{ route('home') }}" class="back-link">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       Back to home
     </a>
 
     <h1 class="auth-heading">Create<br><em>Account</em></h1>
-    <p class="auth-sub">Already have an account? <a href="acryluxe_login.html">Sign in →</a></p>
+    <p class="auth-sub">Already have an account? <a href="{{ route('login') }}">Sign in →</a></p>
+
+    @if ($errors->any())
+      <div class="alert alert-danger" style="font-size:0.82rem; margin-bottom:1.25rem;">
+        <ul style="margin:0; padding-left:1rem;">
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
 
     <!-- Step indicator -->
     <div class="step-indicator">
@@ -373,29 +383,30 @@
       <span class="step-label" id="sl3">Password</span>
     </div>
 
-    <form method="POST" action="/register" id="registerForm" novalidate>
-      <!-- @csrf -->
+    <form method="POST" action="{{ route('register') }}" id="registerForm" novalidate>
+      @csrf
+      <input type="hidden" id="name" name="name" value="" />
 
       <!-- STEP 1: Basic info -->
       <div id="step1">
         <div class="form-row">
           <div class="form-group">
             <label class="form-label" for="first_name">First name</label>
-            <input type="text" id="first_name" name="first_name" class="form-control-acryluxe" placeholder="Priya" required/>
+            <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}" class="form-control-acryluxe" placeholder="Priya" required/>
             <p class="form-error">First name is required.</p>
           </div>
           <div class="form-group">
             <label class="form-label" for="last_name">Last name</label>
-            <input type="text" id="last_name" name="last_name" class="form-control-acryluxe" placeholder="Sharma" required/>
+            <input type="text" id="last_name" name="last_name" value="{{ old('last_name') }}" class="form-control-acryluxe" placeholder="Sharma" required/>
             <p class="form-error">Last name is required.</p>
           </div>
         </div>
         <div class="form-group">
           <label class="form-label" for="email">Email address</label>
-          <input type="email" id="email" name="email" class="form-control-acryluxe" placeholder="priya@example.com" required/>
-          <p class="form-error">Please enter a valid email address.</p>
+          <input type="email" id="email" name="email" value="{{ old('email') }}" class="form-control-acryluxe @error('email') is-invalid @enderror" placeholder="priya@example.com" required/>
+          <p class="form-error" id="emailError">Please enter a valid email address.</p>
         </div>
-        <button type="button" class="btn-submit" onclick="goStep(2)">Continue →</button>
+        <button type="button" class="btn-submit" onclick="validateStep1()">Continue →</button>
       </div>
 
       <!-- STEP 2: Contact -->
@@ -422,7 +433,7 @@
         </div>
         <div style="display:flex; gap:1rem;">
           <button type="button" class="btn-submit" style="background:transparent;color:var(--ink);border-color:rgba(26,22,18,0.2);flex:0 0 auto;width:auto;padding:1rem 1.5rem;" onclick="goStep(1)">← Back</button>
-          <button type="button" class="btn-submit" style="flex:1;" onclick="goStep(3)">Continue →</button>
+          <button type="button" class="btn-submit" style="flex:1;" onclick="validateStep2()">Continue →</button>
         </div>
       </div>
 
@@ -454,7 +465,7 @@
         <div class="terms-check">
           <input type="checkbox" id="terms" name="terms" required/>
           <label for="terms">
-            I agree to the <a href="#">Terms &amp; Conditions</a> and <a href="#">Privacy Policy</a> of Acryluxe.
+            I agree to the <a href="{{ route('terms') }}">Terms &amp; Conditions</a> and <a href="{{ route('policy') }}">Privacy Policy</a> of Acryluxe.
           </label>
         </div>
 
@@ -533,6 +544,102 @@
     document.getElementById('line2').className = 'step-line' + (n > 2 ? ' done' : '');
   }
 
+  function setInvalidState(element, invalid) {
+    if (invalid) {
+      element.classList.add('is-invalid');
+    } else {
+      element.classList.remove('is-invalid');
+    }
+  }
+
+  function setEmailError(message, invalid) {
+    const email = document.getElementById('email');
+    const emailError = document.getElementById('emailError');
+    setInvalidState(email, invalid);
+    emailError.textContent = message;
+    emailError.style.display = invalid ? 'block' : 'none';
+  }
+
+  async function checkEmailAvailability(email) {
+    const tokenInput = document.querySelector('#registerForm input[name="_token"]');
+    const csrfToken = tokenInput ? tokenInput.value : '';
+
+    const response = await fetch('{{ route('register.check-email') }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': csrfToken,
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { available: false, message: data.message || 'Please enter a valid email address.' };
+    }
+
+    return { available: true, message: null };
+  }
+
+  async function validateStep1(moveToNext = true) {
+    const firstName = document.getElementById('first_name');
+    const lastName = document.getElementById('last_name');
+    const email = document.getElementById('email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const firstNameInvalid = !firstName.value.trim();
+    const lastNameInvalid = !lastName.value.trim();
+    const emailValue = email.value.trim();
+    const emailFormatInvalid = !emailRegex.test(emailValue);
+
+    setInvalidState(firstName, firstNameInvalid);
+    setInvalidState(lastName, lastNameInvalid);
+    if (emailFormatInvalid) {
+      setEmailError('Please enter a valid email address.', true);
+    } else {
+      setEmailError('', false);
+    }
+
+    if (firstNameInvalid || lastNameInvalid || emailFormatInvalid) {
+      return false;
+    }
+
+    try {
+      const result = await checkEmailAvailability(emailValue);
+      if (!result.available) {
+        setEmailError(result.message || 'This email is already registered.', true);
+        return false;
+      }
+      setEmailError('', false);
+    } catch (error) {
+      setEmailError('Could not verify email right now. Please try again.', true);
+      return false;
+    }
+
+    const valid = true;
+    if (valid && moveToNext) {
+      goStep(2);
+    }
+    return valid;
+  }
+
+  function validateStep2(moveToNext = true) {
+    const phone = document.getElementById('phone');
+    const phoneDigits = phone.value.replace(/\D/g, '');
+    const phoneInvalid = phoneDigits.length < 7 || phoneDigits.length > 15;
+
+    setInvalidState(phone, phoneInvalid);
+    document.getElementById('phoneError').style.display = phoneInvalid ? 'block' : 'none';
+
+    const valid = !phoneInvalid;
+    if (valid && moveToNext) {
+      goStep(3);
+    }
+    return valid;
+  }
+
   // Password strength checker
   function checkStrength(val) {
     const segs = [document.getElementById('seg1'),document.getElementById('seg2'),document.getElementById('seg3'),document.getElementById('seg4')];
@@ -556,8 +663,36 @@
     p.type = p.type === 'password' ? 'text' : 'password';
   });
 
+  const serverErrorFields = @json($errors->keys());
+  if (serverErrorFields.length) {
+    if (serverErrorFields.some((f) => ['password', 'password_confirmation'].includes(f))) {
+      goStep(3);
+    } else {
+      goStep(1);
+    }
+  }
+
   // Form submit validation
-  document.getElementById('registerForm').addEventListener('submit', function(e) {
+  document.getElementById('registerForm').addEventListener('submit', async function(e) {
+    const step1Valid = await validateStep1(false);
+    const step2Valid = validateStep2(false);
+
+    if (!step1Valid) {
+      goStep(1);
+      e.preventDefault();
+      return;
+    }
+
+    if (!step2Valid) {
+      goStep(2);
+      e.preventDefault();
+      return;
+    }
+
+    const firstName = document.getElementById('first_name').value.trim();
+    const lastName = document.getElementById('last_name').value.trim();
+    document.getElementById('name').value = `${firstName} ${lastName}`.trim();
+
     const pwd = document.getElementById('password');
     const conf = document.getElementById('password_confirmation');
     let valid = true;

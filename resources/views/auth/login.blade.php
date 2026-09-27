@@ -301,13 +301,27 @@
 <div class="auth-form-panel">
   <div class="auth-form-inner">
     <h1 class="auth-heading">Sign <em>in</em></h1>
-    <p class="auth-sub">New to Acryluxe? <a href="acryluxe_register.html">Create an account →</a></p>
+    <p class="auth-sub">New to Acryluxe? <a href="{{ route('register') }}">Create an account →</a></p>
+
+    @if ($errors->any())
+    <div class="alert alert-danger mb-3">
+      <ul class="mb-0 ps-3">
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+    @endif
+
      @if (session('status')) 
     <div class="alert">{{ session('status') }}</div>
     @endif
 
     <form method="POST" action="{{ route('login') }}" id="loginForm" novalidate>
       @csrf
+      @if($backurl)
+        <input type="hidden" name="backurl" value="{{ $backurl }}">
+      @endif
 
       <div class="form-group">
         <label class="form-label" for="email">Email address</label>
@@ -315,13 +329,14 @@
           type="email"
           id="email"
           name="email"
-          class="form-control-acryluxe"
+          value="{{ old('email') }}"
+          class="form-control-acryluxe @error('email') is-invalid @enderror"
           placeholder="you@example.com"
           autocomplete="email"
           required
         />
         @error('email') 
-        <p class="form-error" id="emailError">>{{ $message }}</p>
+        <p class="form-error" id="emailError">{{ $message }}</p>
         @enderror
       </div>
 
@@ -332,7 +347,7 @@
             type="password"
             id="password"
             name="password"
-            class="form-control-acryluxe"
+            class="form-control-acryluxe @error('email') is-invalid @enderror"
             placeholder="Your password"
             autocomplete="current-password"
             required

@@ -1,4 +1,7 @@
-@extends('layouts.app')
+@extends('admin.layout')
+
+@section('title', 'Products')
+@section('section', 'Products')
 
 @section('content')
 
@@ -21,12 +24,14 @@
     <tr>
         <td>{{ $product->name }}</td>
         <td>₹{{ $product->price }}</td>
-        <td>{{ $product->stock }}</td>
-         @if($product->image)
-        <img src="{{ asset('storage/' . $product->image) }}" width="100" class="mb-2">
-    @endif
-
-    <input type="file" name="image" class="form-control mb-2">
+        <td>{{ $product->totalStock() }}</td>
+        <td>
+            @if($product->image)
+                <img src="{{ asset('storage/' . $product->image) }}" width="100" alt="{{ $product->name }}">
+            @else
+                <span class="text-muted">No image</span>
+            @endif
+        </td>
         <td>
 
             <a href="{{ route('admin.products.edit', $product->id) }}" 
@@ -34,12 +39,13 @@
                Edit
             </a>
 
-            <form action="{{ route('admin.products.destroy', $product->id) }}" 
+                        <form action="{{ route('admin.products.destroy', $product->id) }}" 
                   method="POST" 
+                                    class="delete-product-form"
                   style="display:inline;">
                 @csrf
                 @method('DELETE')
-                <button class="btn btn-danger btn-sm">
+                                <button type="submit" class="btn btn-danger btn-sm">
                     Delete
                 </button>
             </form>
@@ -49,5 +55,41 @@
     @endforeach
 
 </table>
+
+<div class="modal fade" id="deleteProductModal" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="deleteProductModalLabel">Delete product?</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">Do you really want to delete the product?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmProductDelete">Delete product</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const deleteProductModal = new bootstrap.Modal(document.getElementById('deleteProductModal'));
+    const confirmProductDelete = document.getElementById('confirmProductDelete');
+    let pendingProductDeleteForm = null;
+
+    document.querySelectorAll('.delete-product-form').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            pendingProductDeleteForm = form;
+            deleteProductModal.show();
+        });
+    });
+
+    confirmProductDelete.addEventListener('click', () => {
+        if (!pendingProductDeleteForm) return;
+
+        pendingProductDeleteForm.submit();
+    });
+</script>
 
 @endsection
