@@ -2,7 +2,9 @@
 set -e
 
 php artisan storage:link || true
-php artisan migrate --force
-php artisan optimize
+
+if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
+	php artisan migrate --force
+fi
 
 exec "$@"
