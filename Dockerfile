@@ -14,7 +14,7 @@ WORKDIR /app
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
 
-FROM php:8.3-apache-bookworm
+FROM php:8.4-apache-bookworm
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
