@@ -30,6 +30,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
+            Log::error('Acryluxe application exception.', [
+                'exception' => $exception,
+                'method' => $request->method(),
+                'url' => $request->fullUrl(),
+                'user_id' => $request->user()?->id,
+            ]);
+
             try {
                 Mail::raw(
                     implode("\n", [
